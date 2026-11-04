@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>ROSEEs Reise – Impuls mFUND-Netzwerktreffen Berlin 2026</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --blue:#0069b4; --blue-d:#00497e; --orange:#d9730d; --green:#21895b;
+  --ink:#1d2633; --muted:#5b6675; --paper:#f4f6f8; --line:#d5dbe2;
+  --font:"Source Sans 3","Source Sans Pro","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);font-family:var(--font);color:var(--ink)}
+body.idle{cursor:none}
+#stage{position:fixed;inset:0;overflow:hidden;
+  background:radial-gradient(ellipse at 30% 20%,#fff 0,#f4f6f8 55%,#e9edf1 100%)}
+#world{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0}
+#world > *{position:absolute}
+svg#map{left:0;top:0;overflow:visible}
+
+/* ---------- Karte ---------- */
+.grid line{stroke:#e2e7ec;stroke-width:6}
+.r-case{fill:none;stroke:#fff;stroke-width:70;stroke-linecap:round;stroke-linejoin:round}
+.r-robot{fill:none;stroke:var(--blue);stroke-width:34;stroke-linecap:round;stroke-linejoin:round}
+.r-car{fill:none;stroke:#8a94a1;stroke-width:26;stroke-dasharray:40 55;stroke-linecap:round}
+.r-tram{fill:none;stroke:#f2b705;stroke-width:30;stroke-linecap:round;stroke-linejoin:round}
+.r-walk{fill:none;stroke:var(--blue);stroke-width:18;stroke-dasharray:4 30;stroke-linecap:round}
+.r-link{fill:none;stroke:#9aa5b1;stroke-width:22;stroke-dasharray:10 60;stroke-linecap:round}
+.a-path{fill:none;stroke:#c4ccd5;stroke-width:44;stroke-linecap:round;stroke-linejoin:round}
+.a-path2{fill:none;stroke:#fff;stroke-width:12;stroke-dasharray:30 50;stroke-linecap:round}
+.photo-dot{fill:#fff;stroke:var(--blue);stroke-width:9}
+.place-dot{fill:var(--ink)}
+.place-lbl{font:700 120px var(--font);fill:var(--ink);paint-order:stroke;stroke:#fff;stroke-width:26px;stroke-linejoin:round}
+.place-sub{font:500 70px var(--font);fill:var(--muted);paint-order:stroke;stroke:#fff;stroke-width:20px}
+.km-lbl{font:600 60px var(--font);fill:var(--blue);paint-order:stroke;stroke:#fff;stroke-width:16px}
+.leader{fill:none;stroke:var(--ink);stroke-opacity:.35;stroke-width:7;stroke-dasharray:18 14}
+.pin circle.o{stroke:#fff;stroke-width:14}
+.pin text{font:800 92px var(--font);fill:#fff;text-anchor:middle;dominant-baseline:central}
+.link-lbl{font:700 110px var(--font);fill:#7c8794}
+
+/* ---------- Karten / Frames ---------- */
+.frame{pointer-events:none}
+.card{background:#fff;border-radius:28px;box-shadow:0 30px 80px rgba(20,40,70,.16),0 4px 14px rgba(20,40,70,.08);
+  transform:rotate(var(--rot,0deg));display:flex;overflow:hidden;cursor:pointer;transition:box-shadow .4s}
+.card .ph{flex:0 0 40%;position:relative;background:#ccc}
+.card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.card .ph.two{display:flex;flex-direction:column;gap:8px;background:#fff}
+.card .ph.two img{height:50%}
+.card .cap{position:absolute;left:22px;bottom:22px;background:rgba(0,0,0,.62);color:#fff;font:600 30px var(--font);
+  padding:8px 18px;border-radius:40px}
+.card .tx{flex:1;padding:62px 70px 56px 64px;display:flex;flex-direction:column}
+.kicker{font:700 34px var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--c,var(--blue));display:flex;align-items:center;gap:22px}
+.card h2{font:800 94px/1.02 var(--font);margin:22px 0 26px;letter-spacing:-.01em}
+.card .lead{font:600 50px/1.25 var(--font);margin:0 0 26px;color:var(--ink)}
+.card ul{margin:0;padding:0 0 0 0;list-style:none;font:400 43px/1.32 var(--font);color:#333d4a}
+.card li{position:relative;padding-left:44px;margin:0 0 14px}
+.card li::before{content:"";position:absolute;left:4px;top:.5em;width:18px;height:18px;border-radius:50%;background:var(--c,var(--blue))}
+.card .foot{margin-top:auto;font:500 30px var(--font);color:var(--muted)}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:78px;height:78px;border-radius:50%;
+  background:var(--c,var(--blue));color:#fff;font:800 46px var(--font);flex:0 0 auto;letter-spacing:0}
+.t-tech{--c:var(--blue)} .t-recht{--c:var(--orange)} .t-gesell{--c:var(--green)}
+b.hl{color:var(--c,var(--blue))}
+
+/* Titel */
+#title{width:4100px;height:1400px}
+#title .k{font:600 62px/1.3 var(--font);color:var(--muted)}
+#title .k b{color:var(--blue)}
+#title h1{font:900 236px/0.98 var(--font);margin:60px 0 50px;letter-spacing:-.025em}
+#title h1 span{color:var(--blue)}
+#title .s{font:500 88px/1.2 var(--font);color:#39424e}
+#title .a{margin-top:70px;font:600 64px var(--font);display:flex;align-items:center;gap:60px}
+#title .a img{height:150px}
+
+/* Poll */
+#poll{flex-direction:column;padding:70px 80px}
+#poll h2{margin:10px 0 8px}
+.menti{display:flex;align-items:center;gap:36px;background:#f1f5f9;border-radius:24px;padding:26px 30px}
+.menti img{height:250px;image-rendering:pixelated}
+.mu{font:600 40px var(--font);color:var(--muted)}
+.mc{font:900 76px var(--font);letter-spacing:.04em;color:var(--blue)}
+#poll .lead{color:var(--muted)}
+.tiles{display:flex;gap:44px;flex:1;margin-top:20px}
+.tile{flex:1;border-radius:26px;background:#f1f5f9;border:5px solid transparent;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;transition:all .3s;user-select:none}
+.tile .ic{font-size:150px;line-height:1}
+.tile .lb{font:800 56px var(--font);text-align:center;line-height:1.1}
+.tile .sb{font:500 32px var(--font);color:var(--muted);text-align:center}
+.tile .hands{font-size:64px;height:76px;letter-spacing:6px}
+.tile.on{border-color:var(--blue);background:#e6f0f8}
+.tile .key{font:700 26px var(--font);color:#9aa5b1}
+
+/* Zahlen */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:26px 40px;margin-top:6px}
+.stat .n{font:900 96px/1 var(--font);color:var(--blue)}
+.stat .l{font:500 32px/1.2 var(--font);color:var(--muted)}
+
+/* Legende */
+#legend{width:3500px;height:1250px;background:rgba(255,255,255,.9);border-radius:40px;padding:80px 100px;
+  box-shadow:0 20px 60px rgba(20,40,70,.12)}
+#legend h3{font:800 110px var(--font);margin:0 0 50px}
+#legend .row{display:flex;align-items:center;gap:50px;font:600 76px var(--font);margin:26px 0}
+#legend .sw{width:260px;height:0;border-top:34px solid var(--blue);border-radius:20px}
+#legend .row .v{margin-left:auto;font-weight:900}
+
+/* Agenda */
+#ahead{width:4400px;height:650px}
+#ahead .k{font:700 64px var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#ahead h2{font:900 170px/1 var(--font);margin:20px 0 0;letter-spacing:-.02em}
+.ag .tx{padding:56px 64px}
+.ag .time{font:900 120px/1 var(--font);color:var(--c)}
+.ag .chips{display:flex;gap:16px;margin-left:auto}
+.ag h2{font-size:78px;margin:22px 0 28px}
+.ag ul{font-size:42px}
+.ag li small{display:block;color:var(--muted);font-size:34px}
+.ag .head{display:flex;align-items:flex-start}
+.ag .aud{font-size:40px;color:var(--muted);margin-top:auto;font-weight:600}
+.ag .side{flex:0 0 30%;background:var(--c);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:50px;gap:22px}
+.ag .side .big{font:900 150px/1 var(--font)}
+.ag .side .sm{font:600 40px/1.2 var(--font);opacity:.95}
+.rqg{display:grid;grid-template-columns:1fr 1fr;gap:44px 80px}
+.rqg>div{display:flex;gap:34px;align-items:flex-start}
+.rqg p{margin:0;font:500 50px/1.25 var(--font)}
+.rqg i{display:block;font:700 38px var(--font);font-style:normal;color:var(--c);margin-top:12px}
+.pl{font-size:52px!important}
+.pl li{margin-bottom:34px!important}
+.todo{background:#fff2a8;border-radius:10px;padding:0 12px;color:#6b5400}
+.ag .ths{display:flex;gap:22px;margin:18px 0 8px}
+.ag .th{position:relative;width:340px;height:230px;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.ag .th img{width:100%;height:100%;object-fit:cover}
+.ag .th .chip{position:absolute;left:10px;top:10px;width:58px;height:58px;font-size:34px}
+.ag h2{font-size:70px!important;line-height:1.1!important;margin:28px 0 30px!important}
+.ag .today{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s;border-top:4px solid #e6ebf0;padding-top:22px}
+.ag .today .kicker{font-size:30px;margin-bottom:14px}
+.ag .today ul{font-size:44px}
+.ag.rv .today{opacity:1;transform:none}
+.here{font:800 64px var(--font);color:var(--blue)}
+
+/* Abschluss */
+#closing{width:2600px;height:1350px;flex-direction:row;align-items:center;padding:90px 100px;gap:80px}
+#closing h2{font:900 130px/1 var(--font);margin:0 0 40px}
+#closing p{font:500 52px/1.3 var(--font);margin:0;color:#39424e}
+#closing img.qr{height:640px;image-rendering:pixelated;border-radius:20px}
+#closing .lg{display:flex;gap:70px;margin-top:70px;align-items:center}
+#closing .lg img{height:110px}
+
+/* Verknüpfungs-Schritt */
+body.link .chip{animation:pulse 1.4s ease-in-out infinite}
+body.link .pin circle.o{animation:pulseS 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.25);box-shadow:0 0 0 18px rgba(0,105,180,.15)}}
+@keyframes pulseS{50%{transform:scale(1.35)}}
+
+/* UI */
+#bar{position:fixed;left:0;bottom:0;height:6px;background:var(--blue);transition:width .6s;z-index:5}
+#notes{position:fixed;left:24px;right:24px;bottom:24px;background:rgba(20,30,45,.92);color:#fff;font:400 22px/1.45 var(--font);
+  padding:20px 28px;border-radius:14px;display:none;z-index:6;max-height:40vh;overflow:auto}
+#notes.on{display:block}
+#notes .st{font-weight:700;color:#8cc4ef;margin-right:12px}
+#help{position:fixed;right:18px;top:14px;font:500 14px var(--font);color:#9aa5b1;z-index:5;transition:opacity 1s}
+body.started #help{opacity:0}
+</style>
+</head>
+<body>
+<div id="stage"><div id="world">
+
+<svg id="map" width="1" height="1"></svg>
+
+<!-- ============ TITEL ============ -->
+<div id="title" style="left:700px;top:180px">
+  <div class="k"><b>mFUND-Netzwerktreffen</b> · Autonome Mikromobilität und smarte Logistik auf der letzten Meile<br>Deutsches Technikmuseum Berlin · 5. November 2026</div>
+  <h1>47 Kilometer.<br>Ein Roboter. <span>Viele Fragen.</span></h1>
+  <div class="s">Was ROSEEs Reise von Freiberg nach Dresden über Mikrologistik im öffentlichen Raum verrät – und wo wir heute Antworten suchen.</div>
+  <div class="a"><img src="img/TUBAF_Logo_blau.png" alt="TU Bergakademie Freiberg"><span>Prof. Dr.-Ing. Sebastian Zug<br><span style="font-weight:500;color:var(--muted)">TU Bergakademie Freiberg · mFUND-Projekt Lieferroboter 3L</span></span></div>
+</div>
+
+<!-- ============ HANDZEICHEN ============ -->
+<div id="poll" class="card" style="left:800px;top:2380px;width:2300px;height:1294px;--rot:-2deg" data-rot="-2">
+  <div style="display:flex;gap:60px;align-items:center">
+    <div style="flex:1"><div class="kicker">Mentimeter · zum Mitmachen</div><h2>Woher kommen Sie?</h2>
+      <p class="lead" style="margin:0">Smartphone raus – oder einfach die Hand heben.</p></div>
+    <div class="menti"><div><div class="mu">menti.com</div><div class="mc" id="mcode">0000 0000</div></div><img src="img/menti_qr.png" alt="QR Mentimeter"></div>
+  </div>
+  <div class="tiles">
+    <div class="tile" data-k="1"><div class="ic">🏛️</div><div class="lb">Behörde &amp;<br>Verwaltung</div><div class="sb">Kommune · Land · Bund</div><div class="hands"></div><div class="key">[1]</div></div>
+    <div class="tile" data-k="2"><div class="ic">🏭</div><div class="lb">Unternehmen &amp;<br>Betreiber</div><div class="sb">Hersteller · Logistik · Start-up</div><div class="hands"></div><div class="key">[2]</div></div>
+    <div class="tile" data-k="3"><div class="ic">🎓</div><div class="lb">Hochschule &amp;<br>Forschung</div><div class="sb">Universität · HAW · Institut</div><div class="hands"></div><div class="key">[3]</div></div>
+  </div>
+</div>
+
+<!-- ============ ROSEE / ZAHLEN ============ -->
+<div id="intro" class="card t-tech" style="left:1900px;top:6050px;width:1800px;height:1012px;--rot:1.5deg" data-rot="1.5">
+  <div class="ph"><img src="img/c7f6f5.jpg" alt=""><span class="cap">Freiberg, Burgstraße · 07:14</span></div>
+  <div class="tx">
+    <div class="kicker">7. Oktober 2026 · ROSEE</div>
+    <h2 style="font-size:72px;margin-bottom:30px">Vom RoboLab Freiberg ins 4transferLab Dresden</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">≈ 47 km</div><div class="l">Gesamtstrecke</div></div>
+      <div class="stat"><div class="n">≈ 25 km</div><div class="l">auf eigenen Rädern</div></div>
+      <div class="stat"><div class="n">5 km/h</div><div class="l">Schritttempo, begleitet</div></div>
+      <div class="stat"><div class="n">11½ h</div><div class="l">07:15 – 18:50 Uhr</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEGENDE ============ -->
+<div id="legend" style="left:6800px;top:5950px">
+  <h3>Die Reise in Abschnitten</h3>
+  <div class="row"><span class="sw"></span>ROSEE auf eigenen Rädern<span class="v">≈ 25,3 km</span></div>
+  <div class="row"><span class="sw" style="border-top:26px dashed #8a94a1;border-radius:0"></span>im Auto (Feierabendverkehr)<span class="v">7,9 km</span></div>
+  <div class="row"><span class="sw" style="border-color:#f2b705"></span>Straßenbahn Linie 7<span class="v">≈ 13,7 km</span></div>
+</div>
+
+<!-- ============ HERAUSFORDERUNGEN ============ -->
+<div id="c1" class="card t-tech" style="left:700px;top:3950px;width:1800px;height:1012px;--rot:2deg" data-rot="2" data-pin="5ac546">
+  <div class="ph"><img src="img/5ac546.jpg" alt=""><span class="cap">km 9,6 · 11:45</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">1</span>Technik</div>
+    <h2>Umgebung verstehen</h2>
+    <p class="lead">Gras ist kein Hindernis – der Roboter muss das erst lernen.</p>
+    <ul>
+      <li>Überwachsene Wege lösen den Sicherheitsstopp aus</li>
+      <li>Wie breit ist der Weg – und wie genau weiß ich, wo ich bin?</li>
+    </ul>
+  </div>
+</div>
+
+<div id="c2" class="card t-recht" style="left:3950px;top:5520px;width:1800px;height:1012px;--rot:-1.5deg" data-rot="-1.5" data-pin="078eb7">
+  <div class="ph"><img src="img/078eb7.jpg" alt="" style="object-position:30% 50%"><span class="cap">Ortseingang Hetzdorf · km 11,5</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">2</span>Recht</div>
+    <h2>Wer ist zuständig?</h2>
+    <p class="lead">Jedes Ortsschild: eine neue Behörde.</p>
+    <ul>
+      <li>2026: § 25 StVO – Fußgänger mit mitgeführtem Gerät, keine Genehmigung nötig</li>
+      <li>Als Kraftfahrzeug (§ 70 StVZO): außerorts Erlaubnisse von <b class="hl">zweistellig vielen</b> Baulastträgern</li>
+    </ul>
+  </div>
+</div>
+
+<div id="c3" class="card t-tech" style="left:3350px;top:2250px;width:1800px;height:1012px;--rot:-2deg" data-rot="-2" data-pin="169b33">
+  <div class="ph"><img src="img/169b33.jpg" alt="" style="object-position:55% 50%"><span class="cap">km 17,2 · bergauf</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">3</span>Technik</div>
+    <h2>Navigieren im Gelände</h2>
+    <p class="lead">Lokalisierung in 3D, Pfadregelung in 2D.</p>
+    <ul>
+      <li>Höhenunterschiede erzeugen scheinbare Abweichungen vom Pfad</li>
+      <li>Folge: ruckartige Manöver – Übernahme per Hand</li>
+    </ul>
+  </div>
+</div>
+
+<div id="c4" class="card t-recht" style="left:5850px;top:4420px;width:1800px;height:1012px;--rot:1.5deg" data-rot="1.5" data-pin="02c5e9">
+  <div class="ph two"><img src="img/240113.jpg" alt=""><img src="img/02c5e9.jpg" alt="" style="object-position:50% 60%"><span class="cap">km 18,7 – 21,2</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">4</span>Infrastruktur</div>
+    <h2>Wege, die es nicht gibt</h2>
+    <p class="lead">Außerorts oft weder Fuß- noch Radweg.</p>
+    <ul>
+      <li>Breiter Randstreifen, wenig Verkehr: geht</li>
+      <li>Feierabendverkehr, Baustellenstau: geht nicht – <b class="hl">7,9 km im Kofferraum</b></li>
+    </ul>
+  </div>
+</div>
+
+<div id="c5" class="card t-gesell" style="left:6200px;top:780px;width:1800px;height:1012px;--rot:2deg" data-rot="2" data-pin="b6f27d">
+  <div class="ph"><img src="img/b6f27d.jpg" alt="" style="object-position:45% 50%"><span class="cap">Dresden-Pennrich · km 31,4</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">5</span>Betrieb</div>
+    <h2>Realbetrieb ist Teamsport</h2>
+    <p class="lead">11½ Stunden, vier Menschen, verteiltes Wissen.</p>
+    <ul>
+      <li>Bedienung muss für alle im Team einfach sein</li>
+      <li>Lückenlose Datenaufzeichnung – sonst fehlt die Analyse</li>
+    </ul>
+  </div>
+</div>
+
+<div id="c6" class="card t-gesell" style="left:7600px;top:2980px;width:1800px;height:1012px;--rot:-2deg" data-rot="-2" data-pin="285998">
+  <div class="ph"><img src="img/285998.jpg" alt=""><span class="cap">Gehweg mit Radverkehr · km 32</span></div>
+  <div class="tx">
+    <div class="kicker"><span class="chip">6</span>Gesellschaft</div>
+    <h2>Sicher ≠ sicher gefühlt</h2>
+    <p class="lead">Den Gehweg teilen wir mit Fuß- und Radverkehr.</p>
+    <ul>
+      <li>Auch ein nachweislich sicheres System muss vorhersehbar wirken</li>
+      <li>Abstand halten, ruhig fahren, Absicht zeigen</li>
+    </ul>
+  </div>
+</div>
+
+<div id="arrive" class="card t-tech" style="left:9750px;top:2500px;width:1800px;height:1012px;--rot:1.5deg" data-rot="1.5">
+  <div class="ph two"><img src="img/0671f0.jpg" alt="" style="object-position:50% 35%"><img src="img/b26db1.jpg" alt="" style="object-position:50% 55%"><span class="cap">Linie 7 · 4transferLab 18:50</span></div>
+  <div class="tx">
+    <div class="kicker">Ankunft</div>
+    <h2>Angekommen – mit Lernkurve</h2>
+    <p class="lead">Letzte Etappe mit der Straßenbahn, vorbei an der Semperoper.</p>
+    <ul>
+      <li>2027 fahren wir erneut</li>
+      <li>Ziel: deutlich mehr Strecke auf eigenen Rädern</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ AGENDA ============ -->
+<div id="ahead" style="left:11900px;top:-80px">
+  <div class="k">Nächster Halt · Berlin, heute</div>
+  <h2>Aus der Reise wird das Programm</h2>
+</div>
+
+<div id="a1" class="card ag t-tech" style="left:11900px;top:800px;width:1800px;height:1012px;--rot:-1.5deg" data-rot="-1.5">
+  <div class="side"><div class="big">11:20</div><div class="sm">Session 1</div><div class="sm" style="opacity:.75">Technik</div></div>
+  <div class="tx">
+    <div class="kicker">Aus der Reise</div>
+    <div class="ths"><div class="th t-tech"><img src="img/5ac546.jpg" alt=""><span class="chip">1</span></div><div class="th t-tech"><img src="img/169b33.jpg" alt=""><span class="chip">3</span></div></div>
+    <h2>Wie erkennt und durchfährt ein Roboter reale Umgebungen – robust und nachweisbar sicher?</h2>
+    <div class="today"><div class="kicker">Heute dazu</div><ul><li>Umgebungsmodelle für die Outdoor-Navigation</li><li>Netzwerkdesign nach Zonen</li><li>Vorausschauendes Risikomanagement</li></ul></div>
+  </div>
+</div>
+<div id="a2" class="card ag t-recht" style="left:14300px;top:800px;width:1800px;height:1012px;--rot:1.5deg" data-rot="1.5">
+  <div class="side"><div class="big">13:30</div><div class="sm">Session 2</div><div class="sm" style="opacity:.75">Recht &amp; Anwendung</div></div>
+  <div class="tx">
+    <div class="kicker">Aus der Reise</div>
+    <div class="ths"><div class="th t-recht"><img src="img/078eb7.jpg" alt=""><span class="chip">2</span></div><div class="th t-recht"><img src="img/240113.jpg" alt=""><span class="chip">4</span></div></div>
+    <h2>Wo darf ein Roboter fahren – und wer entscheidet das?</h2>
+    <div class="today"><div class="kicker">Heute dazu</div><ul><li>Rechtsfragen auf Fuß- und Radwegen</li><li>Regulierungsrahmen für Lieferroboter</li><li>Den Gehweg nutzbar machen</li></ul></div>
+  </div>
+</div>
+<div id="a3" class="card ag t-gesell" style="left:14300px;top:2350px;width:1800px;height:1012px;--rot:-1deg" data-rot="-1">
+  <div class="side"><div class="big">15:00</div><div class="sm">Praxis</div><div class="sm" style="opacity:.75">Showroom ab 15:25</div></div>
+  <div class="tx">
+    <div class="kicker">Aus der Reise</div>
+    <div class="ths"><div class="th t-gesell"><img src="img/b6f27d.jpg" alt=""><span class="chip">5</span></div></div>
+    <h2>Was braucht es, damit der Betrieb im Alltag funktioniert?</h2>
+    <div class="today"><div class="kicker">Heute dazu</div><ul><li>Erfahrungen aus einem Praxisprojekt</li><li>Kurzpitches auf der Bühne</li><li>Showroom: Demonstratoren zum Anfassen</li></ul></div>
+  </div>
+</div>
+<div id="a4" class="card ag t-gesell" style="left:11900px;top:2350px;width:1800px;height:1012px;--rot:1deg" data-rot="1">
+  <div class="side" style="background:var(--ink)"><div class="big">16:30</div><div class="sm">Podium</div><div class="sm" style="opacity:.75">Ende 17:15</div></div>
+  <div class="tx">
+    <div class="kicker">Aus der Reise</div>
+    <div class="ths"><div class="th t-gesell"><img src="img/285998.jpg" alt=""><span class="chip">6</span></div></div>
+    <h2>Wie teilen wir den öffentlichen Raum – zu Fuß, per Rad und mit Robotern?</h2>
+    <div class="today"><div class="kicker">Heute dazu</div><ul><li>Perspektive Radverkehr</li><li>Perspektive Verwaltung</li><li>Perspektive Logistik im ländlichen Raum</li></ul></div>
+  </div>
+</div>
+
+<!-- ============ FORSCHUNGSFRAGEN ============ -->
+<div id="rq" class="card" style="left:7950px;top:4250px;width:2700px;height:1300px;--rot:-1deg;flex-direction:column;padding:80px 96px" data-rot="-1">
+  <div class="kicker">Vom Einzelfall zum Allgemeinen</div>
+  <h2 style="font-size:104px;margin:16px 0 46px">Sechs Forschungsfragen – und wo wir sie heute diskutieren</h2>
+  <div class="rqg">
+    <div class="t-tech"><span class="chip">1</span><p>Wie unterscheiden Roboter <b class="hl">Befahrbares von echten Hindernissen</b> – und kennen ihren Freiraum?<i>→ Session 1 · 11:20</i></p></div>
+    <div class="t-recht"><span class="chip">2</span><p>Wie sieht ein <b class="hl">gemeindeübergreifender Genehmigungsprozess</b> aus, der skaliert?<i>→ Session 2 · 13:30</i></p></div>
+    <div class="t-tech"><span class="chip">3</span><p>Wie bleibt Navigation <b class="hl">im Realbetrieb robust</b> – und nachweisbar sicher?<i>→ Session 1 · 11:20</i></p></div>
+    <div class="t-recht"><span class="chip">4</span><p>Wie planen und bewerten wir <b class="hl">robotergeeignete Operationsgebiete</b>?<i>→ Session 2 · 13:30</i></p></div>
+    <div class="t-gesell"><span class="chip">5</span><p>Wie wird der <b class="hl">Betrieb alltagstauglich</b> – Bedienung, Daten, Personal?<i>→ Praxis &amp; Showroom · 15:00</i></p></div>
+    <div class="t-gesell"><span class="chip">6</span><p>Wie entstehen <b class="hl">Akzeptanz und Vertrauen</b> im geteilten öffentlichen Raum?<i>→ Podium · 16:30</i></p></div>
+  </div>
+</div>
+
+<!-- ============ PAPER ============ -->
+<div id="papers" class="card" style="left:11900px;top:3700px;width:2400px;height:1100px;--rot:-1deg;flex-direction:column;padding:80px 96px" data-rot="-1">
+  <div class="kicker">Ihre Beiträge</div>
+  <h2 style="font-size:100px;margin:16px 0 40px">Was passiert mit den eingereichten Papern?</h2>
+  <ul class="pl">
+    <li><b>Eingegangen:</b> <span class="todo">[Anzahl]</span> Einreichungen aus <span class="todo">[Projekten / Institutionen]</span></li>
+    <li><b>Auswahl:</b> Vorträge in Session 1 &amp; 2, weitere Beiträge als <span class="todo">[Pitch / Poster]</span> im Showroom</li>
+    <li><b>Veröffentlichung:</b> <span class="todo">[Tagungsband / Sonderheft / Website]</span></li>
+    <li><b>Nächste Schritte:</b> <span class="todo">[Überarbeitung bis … · Feedback aus der Diskussion heute]</span></li>
+  </ul>
+</div>
+
+<!-- ============ ABSCHLUSS ============ -->
+<div id="closing" class="card" style="left:14600px;top:3700px;--rot:1deg" data-rot="1">
+  <div style="flex:1">
+    <h2>Gute Fahrt durch den Tag!</h2>
+    <p>Karte, alle 60 Fotos und Erkenntnisse der Reise:<br><b style="color:var(--blue)">sebastianzug.github.io/RoseesRoboterReise</b></p>
+    <div class="lg"><img src="img/TUBAF_Logo_blau.png" alt=""><img src="img/robolab.png" alt=""><img src="img/4transfer_Logo.png" alt=""></div>
+  </div>
+  <img class="qr" src="img/qr.png" alt="QR-Code zur Routen-Website">
+</div>
+
+<!-- unsichtbare Übersichtsrahmen -->
+<div id="f-map" class="frame" style="left:600px;top:700px;width:11000px;height:6600px"></div>
+<div id="f-all" class="frame" style="left:500px;top:-300px;width:16900px;height:7700px"></div>
+<div id="f-agenda" class="frame" style="left:11700px;top:-200px;width:4600px;height:3700px"></div>
+<div id="f-end" class="frame" style="left:11700px;top:3500px;width:5700px;height:1750px"></div>
+
+</div></div>
+
+<div id="bar"></div>
+<div id="notes"></div>
+<div id="help">→ / Leertaste: weiter · ← zurück · O Übersicht · N Notizen · F Vollbild · 1–3 Handzeichen zählen</div>
+
+<script src="route.js"></script>
+<script>
+/* =================== Schritte & Sprechernotizen =================== */
+const MENTI_CODE = '0000 0000';   // <- Mentimeter-Code hier eintragen
+const STEPS = [
+ // Zeitplan 15 min: Start 0:00 · Mentimeter 0:30 · Reise 2:30 · Forschungsfragen 8:30 · Agenda 10:30 · Paper 13:00 · Ende 14:30
+ {el:'title', robot:'start', note:'[0:00] Begrüßung. „Ich nehme Sie mit auf eine Reise – 47 km, ein Roboter, viele Fragen. Am Ende dieser Reise steht Ihr Programm für heute.“'},
+ {el:'poll', note:'[0:30 – ca. 2 min] Mentimeter: Code/QR zeigen, Zeit zum Abstimmen lassen, dann zur Mentimeter-Ergebnisansicht wechseln (oder Handzeichen; Kachel anklicken bzw. Taste 1/2/3 hält die Menge fest). „Genau diese Mischung – Verwaltung, Unternehmen, Forschung – braucht das Thema.“'},
+ {el:'intro', robot:'start', note:'[2:30 – Reise, ca. 6 min] 7. Oktober 2026, 07:15 Uhr, RoboLab Freiberg. ROSEE fährt in Schrittgeschwindigkeit, begleitet von einem Team mit Not-Aus. Ziel: 4transferLab in der Dresdner Neustadt.'},
+ {el:'f-map', robot:'start', note:'Die Reise im Überblick: blau auf eigenen Rädern, grau gestrichelt im Auto, gelb mit der Linie 7. Jeder Punkt ist ein Foto. An sechs Stellen halten wir an.'},
+ {el:'c1', robot:'5ac546', note:'Begleitgrün: Gras, Äste, Sträucher. Das restriktive Sicherheitssystem stoppt. Der Roboter muss lernen, was nachgibt – und wissen, wie breit der befahrbare Bereich ist, abhängig von der eigenen Positionsunsicherheit.'},
+ {el:'c2', robot:'078eb7', note:'Gemeindegrenzen: Freiberg hat in Abstimmung mit Landkreis und Freital entschieden – § 25 StVO, keine gesonderte Genehmigung. Der LASuV-Bescheidentwurf (§ 70 StVZO) ordnet ROSEE als Kraftfahrzeug ein; außerorts bräuchte es Sondernutzungserlaubnisse vieler Baulastträger.'},
+ {el:'c3', robot:'169b33', note:'Hier mussten wir schieben. Lokalisierung in 3D, Pfadabweichung in 2D – bei starken Höhenunterschieden „denkt“ der Roboter, er sei weit vom Pfad weg, und reagiert mit heftigen Manövern.'},
+ {el:'c4', robot:'02c5e9', note:'Verbindungsstraßen ohne Fuß-/Radweg: mit Randstreifen und wenig Verkehr ging es. Im Feierabendverkehr vor Dresden nicht – 7,9 km im Auto.'},
+ {el:'c5', robot:'b6f27d', note:'Marathon-Experiment: Wissen über Parameter und Startkommandos ist auf mehrere Köpfe verteilt. Es braucht ein intuitives Interface, eine Visualisierung der Robotersicht und lückenlose Datenaufzeichnung.'},
+ {el:'c6', robot:'285998', note:'Sicher ist nicht gleich sicher gefühlt – selbst im eingeweihten Team. Auf geteilten Gehwegen entscheidet die wahrgenommene Sicherheit über Akzeptanz.'},
+ {el:'arrive', robot:'goal', note:'18:50 im 4transferLab. 2027 fahren wir erneut – mit Überschreib-Taster, besserem Hindernisverständnis und Wissen um die Wegbreite.'},
+ {el:'rq', robot:'goal', note:'[8:30 – ca. 2 min] Vom Einzelfall zum Allgemeinen: Jede Station steht für eine Forschungsfrage, die weit über ROSEE hinausgeht. Unsere zwei Kernfragen aus dem Projekt: Planung robotergeeigneter Operationsgebiete (4) und ein gemeindeübergreifender Genehmigungsprozess (2).'},
+ {el:'f-all', cls:'link', note:'Überleitung: „Unterwegs begegnen uns diese Fragen bunt gemischt – das Programm heute sortiert sie.“ Die Nummern finden sich auf den Agenda-Karten wieder.'},
+ {el:'f-agenda', note:'[10:30 – Agenda, ca. 2½ min] „Aus der Reise wird das Programm“: Die Fragen von unterwegs ordnen den Tag – Technik, Recht &amp; Anwendung, Praxis, Podium.'},
+ {el:'a1', note:'Stationen 1 und 3 – Gras auf dem Weg, Höhenprofil: Wie erkennt und durchfährt ein Roboter reale Umgebungen robust und nachweisbar sicher? (Klick: was heute dazu kommt)'},
+ {el:'a1', reveal:'a1', note:'Session 1 um 11:20: Umgebungsmodelle, Netzwerkdesign nach Zonen, Risikomanagement.'},
+ {el:'a2', note:'Stationen 2 und 4 – Ortsschild, fehlender Fuß-/Radweg: Wo darf ein Roboter fahren – und wer entscheidet das?'},
+ {el:'a2', reveal:'a2', note:'Session 2 um 13:30: Rechtsfragen auf Fuß- und Radwegen, Regulierungsrahmen, Gehweg nutzbar machen.'},
+ {el:'a3', note:'Station 5 – 11½ Stunden Teamarbeit: Was braucht der Betrieb im Alltag?'},
+ {el:'a3', reveal:'a3', note:'15:00 Praxisimpuls, Kurzpitches, ab 15:25 Showroom mit Demonstratoren.'},
+ {el:'a4', note:'Station 6 – der geteilte Gehweg: Wie teilen wir den öffentlichen Raum?'},
+ {el:'a4', reveal:'a4', note:'16:30 Podium mit den Perspektiven Radverkehr, Verwaltung und Logistik im ländlichen Raum – ich moderiere.'},
+ {el:'papers', note:'[13:00 – ca. 1½ min] Umgang mit den eingereichten Papern: Anzahl, Auswahl für Vorträge/Pitches, Veröffentlichung, nächste Schritte. (Gelb markierte Platzhalter vorher ausfüllen.)'},
+ {el:'closing', robot:'goal', note:'[14:30] Hinweis auf die Website mit Karte und Fotos. Übergabe an Session 1.'},
+];
+document.getElementById('mcode').textContent=MENTI_CODE;
+
+/* =================== Weltaufbau =================== */
+const R = window.ROUTE, NS='http://www.w3.org/2000/svg';
+const svg = document.getElementById('map'), world=document.getElementById('world');
+const el=(t,a,p=svg)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const d=pts=>'M'+pts.map(p=>p.join(',')).join('L');
+
+// dezentes Raster
+const g0=el('g',{class:'grid'});
+for(let x=0;x<=17000;x+=1000) el('line',{x1:x,y1:-1000,x2:x,y2:8000},g0);
+for(let y=-1000;y<=8000;y+=1000) el('line',{x1:0,y1:y,x2:17000,y2:y},g0);
+
+// Verbindung Dresden -> Agenda
+const G=R.places.goal;
+el('path',{class:'r-link',d:`M${G[0]+60},${G[1]-60} C ${G[0]+700},${G[1]-900} 11200,600 11800,560`});
+el('text',{class:'link-lbl',x:10350,y:640},).textContent='… und heute';
+
+// Route
+const robotAll=[...R.robot1,...R.car,...R.robot2];
+for(const pts of [robotAll,R.tram,R.walk]) el('path',{class:'r-case',d:d(pts)});
+el('path',{class:'r-tram',d:d(R.tram)});
+el('path',{class:'r-robot',d:d(R.robot1)});
+el('path',{class:'r-robot',d:d(R.robot2)});
+el('path',{class:'r-car',d:d(R.car)});
+el('path',{class:'r-walk',d:d(R.walk)});
+
+// km-Marken
+(function(){let acc=0,next=5;const K=300;
+ for(let i=1;i<robotAll.length;i++){const a=robotAll[i-1],b=robotAll[i];acc+=Math.hypot(b[0]-a[0],b[1]-a[1])/K;
+  if(acc>=next&&next<=30){el('circle',{cx:b[0],cy:b[1],r:20,fill:'#fff',stroke:'#0069b4','stroke-width':8});
+   el('text',{class:'km-lbl',x:b[0]+40,y:b[1]+70}).textContent='km '+next;next+=5;}}})();
+
+// Fotopunkte
+for(const id in R.photos){const p=R.photos[id];el('circle',{class:'photo-dot',cx:p[0],cy:p[1],r:22});}
+
+// Orte
+const places=[
+ [R.places.start,'Freiberg','RoboLab · 07:15',-60,180,'end'],
+ [R.photos['605b9c'],'Falkenberg','',-70,30,'end'],
+ [R.photos['078eb7'],'Hetzdorf','',70,-60,'start'],
+ [R.photos['b6f27d'],'Pennrich','',-40,-110,'end'],
+ [R.tram[0],'Gompitz','Umstieg Linie 7',60,150,'start'],
+ [R.places.goal,'Dresden','4transferLab · 18:50',-80,-120,'end'],
+];
+for(const [p,n,s,dx,dy,anc] of places){
+ el('circle',{class:'place-dot',cx:p[0],cy:p[1],r:34});
+ el('text',{class:'place-lbl',x:p[0]+dx,y:p[1]+dy,'text-anchor':anc}).textContent=n;
+ if(s) el('text',{class:'place-sub',x:p[0]+dx,y:p[1]+dy+85,'text-anchor':anc}).textContent=s;
+}
+
+// Agenda-Pfad (hinter den Karten)
+const ap='M11850,560 C 11850,900 12200,1306 12800,1306 L15200,1306 C 16700,1306 16700,2856 15200,2856 L12800,2856 C 12000,2856 11750,3300 11800,3700';
+el('path',{class:'a-path',d:ap}); el('path',{class:'a-path2',d:ap});
+el('circle',{cx:11850,cy:560,r:60,fill:'#0069b4',stroke:'#fff','stroke-width':16});
+
+// Leitlinien & Stations-Pins
+const colorOf=c=>getComputedStyle(c).getPropertyValue('--c').trim()||'#0069b4';
+const leaders=el('g',{}), pins=el('g',{});
+document.querySelectorAll('.card[data-pin]').forEach(c=>{
+  const p=R.photos[c.dataset.pin], x=parseFloat(c.style.left), y=parseFloat(c.style.top), w=c.offsetWidth||1800, h=c.offsetHeight||1012;
+  const cx=Math.max(x,Math.min(x+w,p[0])), cy=Math.max(y,Math.min(y+h,p[1]));
+  el('path',{class:'leader',d:`M${p[0]},${p[1]} L${cx},${cy}`},leaders);
+  const n=c.querySelector('.chip').textContent, col=getComputedStyle(c).getPropertyValue('--c');
+  const g=el('g',{class:'pin'},pins);
+  el('circle',{class:'o',cx:p[0],cy:p[1],r:78,fill:c.classList.contains('t-tech')?'#0069b4':c.classList.contains('t-recht')?'#d9730d':'#21895b'},g);
+  el('text',{x:p[0],y:p[1]+4},g).textContent=n;
+});
+
+// Roboter-Marker
+const travel=[...robotAll,...R.tram,...R.walk]; const cum=[0];
+for(let i=1;i<travel.length;i++) cum.push(cum[i-1]+Math.hypot(travel[i][0]-travel[i-1][0],travel[i][1]-travel[i-1][1]));
+const bot=el('g',{});
+bot.innerHTML=`<circle r="150" fill="#fff" stroke="#0069b4" stroke-width="16"/>
+ <line x1="55" y1="-25" x2="55" y2="-125" stroke="#555" stroke-width="7"/><path d="M55,-125 L115,-108 L55,-92Z" fill="#e2231a"/>
+ <rect x="-80" y="-45" width="160" height="80" rx="12" fill="#c9ced4" stroke="#4a525c" stroke-width="7"/>
+ <rect x="-80" y="-12" width="160" height="14" fill="#0069b4"/>
+ <circle cx="-52" cy="50" r="26" fill="#2b2f35"/><circle cx="52" cy="50" r="26" fill="#2b2f35"/>`;
+let botD=0;
+function botAt(dist){botD=dist;let i=cum.findIndex(c=>c>=dist);if(i<1)i=1;const a=travel[i-1],b=travel[i],t=(dist-cum[i-1])/((cum[i]-cum[i-1])||1);
+ bot.setAttribute('transform',`translate(${a[0]+(b[0]-a[0])*t},${a[1]+(b[1]-a[1])*t})`);}
+function distOf(key){const p=key==='start'?R.places.start:key==='goal'?R.walk[R.walk.length-1]:R.photos[key];
+ let best=0,bd=1e18;travel.forEach((q,i)=>{const dd=(q[0]-p[0])**2+(q[1]-p[1])**2;if(dd<bd){bd=dd;best=i}});return cum[best];}
+botAt(0);
+
+/* =================== Kamera =================== */
+let cam={x:0,y:0,w:1000,r:0};
+function vp(){return {W:innerWidth,H:innerHeight}}
+function apply(c){const {W,H}=vp(),s=W/c.w;
+  world.style.transform=`translate(${W/2}px,${H/2}px) rotate(${c.r}deg) scale(${s}) translate(${-c.x}px,${-c.y}px)`;}
+function frameOf(id){const e=document.getElementById(id);
+  const x=parseFloat(e.style.left),y=parseFloat(e.style.top),w=e.offsetWidth,h=e.offsetHeight,rot=parseFloat(e.dataset.rot||0);
+  const {W,H}=vp(),pad=id.startsWith('f-')?1.0:1.1;const s=Math.min(W/(w*pad),H/(h*pad));
+  return {x:x+w/2,y:y+h/2,w:W/s,r:-rot};}
+function interpZoom(a,b){const rho=1.35,r2=rho*rho,r4=r2*r2;const dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy;let f,S;
+  if(d2<1e-6){S=Math.log(b.w/a.w)/rho;f=t=>[a.x+t*dx,a.y+t*dy,a.w*Math.exp(rho*t*S)];}
+  else{const d1=Math.sqrt(d2),b0=(b.w*b.w-a.w*a.w+r4*d2)/(2*a.w*r2*d1),b1=(b.w*b.w-a.w*a.w-r4*d2)/(2*b.w*r2*d1),
+    q0=Math.log(Math.sqrt(b0*b0+1)-b0),q1=Math.log(Math.sqrt(b1*b1+1)-b1);S=(q1-q0)/rho;
+    f=t=>{const s=t*S,ch=Math.cosh(q0),u=a.w/(r2*d1)*(ch*Math.tanh(rho*s+q0)-Math.sinh(q0));return [a.x+u*dx,a.y+u*dy,a.w*ch/Math.cosh(rho*s+q0)];}}
+  f.dur=Math.max(900,Math.min(2600,Math.abs(S)*900));return f;}
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+let anim=null;
+function flyTo(target,botTarget){
+  if(anim)cancelAnimationFrame(anim.id);
+  const from={...cam},f=interpZoom(from,target),t0=performance.now(),dr=((target.r-from.r+540)%360)-180,b0=botD;
+  const dur=f.dur;
+  const tick=now=>{let t=Math.min(1,(now-t0)/dur),e=ease(t);const [x,y,w]=f(e);
+    cam={x,y,w,r:from.r+dr*e};apply(cam);
+    if(botTarget!=null)botAt(b0+(botTarget-b0)*e);
+    if(t<1)anim.id=requestAnimationFrame(tick);else{anim=null;cam={...target};apply(cam);}};
+  anim={id:requestAnimationFrame(tick)};
+}
+
+/* =================== Navigation =================== */
+let cur=-1;
+const notes=document.getElementById('notes'),bar=document.getElementById('bar');
+function go(i,instant){i=Math.max(0,Math.min(STEPS.length-1,i));const st=STEPS[i];cur=i;
+  document.body.className=(st.cls||'')+(document.body.classList.contains('started')?' started':'');
+  STEPS.forEach((t,j)=>{if(t.reveal)document.getElementById(t.reveal).classList.toggle('rv',j<=i)});
+  const tgt=frameOf(st.el),bt=st.robot?distOf(st.robot):null;
+  if(instant){cam=tgt;apply(cam);if(bt!=null)botAt(bt);}else flyTo(tgt,bt);
+  bar.style.width=(100*i/(STEPS.length-1))+'%';
+  notes.innerHTML=`<span class="st">${i+1}/${STEPS.length}</span>${st.note||''}`;
+  history.replaceState(null,'','#'+(i+1));
+}
+let overview=false;
+addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('input,textarea'))return;
+  document.body.classList.add('started');
+  const k=e.key;
+  if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(k)){e.preventDefault();overview=false;go(cur+1);}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(k)){e.preventDefault();overview=false;go(cur-1);}
+  else if(k==='Home')go(0); else if(k==='End')go(STEPS.length-1);
+  else if(k==='o'||k==='O'||k==='Escape'&&!document.fullscreenElement){overview=!overview;overview?flyTo(frameOf('f-all'),null):go(cur);}
+  else if(k==='n'||k==='N')notes.classList.toggle('on');
+  else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+  else if(['1','2','3'].includes(k)&&STEPS[cur].el==='poll')bump(document.querySelector(`.tile[data-k="${k}"]`));
+});
+// Klick: Kachel zählen, sonst Karte anfliegen
+document.addEventListener('click',e=>{
+  document.body.classList.add('started');
+  const tile=e.target.closest('.tile'); if(tile){bump(tile);return;}
+  const c=e.target.closest('[id]');
+  if(c&&c.parentElement===world){const i=STEPS.findIndex(s=>s.el===c.id);if(i>=0&&i!==cur){overview=false;go(i);return;}}
+  if(!c||c.parentElement!==world){overview=false;go(cur+1);}
+});
+addEventListener('contextmenu',e=>{e.preventDefault();go(cur-1);});
+function bump(t){const n=((+t.dataset.n||0)+1)%4;t.dataset.n=n;t.querySelector('.hands').textContent='✋'.repeat(n);t.classList.toggle('on',n>0);}
+addEventListener('resize',()=>{if(!anim)go(cur,true)});
+let idleT;addEventListener('mousemove',()=>{document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>document.body.classList.add('idle'),2500)});
+
+// Start
+const h=parseInt(location.hash.slice(1));
+go(isNaN(h)?0:h-1,true);
+</script>
+</body>
+</html>
