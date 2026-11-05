@@ -76,7 +76,7 @@ b.hl{color:var(--c,var(--blue))}
 #poll{flex-direction:column;padding:70px 80px}
 #poll h2{margin:10px 0 8px}
 .menti{display:flex;align-items:center;gap:36px;background:#f1f5f9;border-radius:24px;padding:26px 30px}
-.menti img{height:250px;image-rendering:pixelated}
+.menti img{height:420px;image-rendering:pixelated}
 .mu{font:600 40px var(--font);color:var(--muted)}
 .mc{font:900 76px var(--font);letter-spacing:.04em;color:var(--blue)}
 #poll .lead{color:var(--muted)}
@@ -176,9 +176,9 @@ body.started #help{opacity:0}
 <!-- ============ HANDZEICHEN ============ -->
 <div id="poll" class="card" style="left:800px;top:2380px;width:2300px;height:1294px;--rot:-2deg" data-rot="-2">
   <div style="display:flex;gap:60px;align-items:center">
-    <div style="flex:1"><div class="kicker">Mentimeter · zum Mitmachen</div><h2>Woher kommen Sie?</h2>
-      <p class="lead" style="margin:0">Smartphone raus – oder einfach die Hand heben.</p></div>
-    <div class="menti"><div><div class="mu">menti.com</div><div class="mc" id="mcode">0000 0000</div></div><img src="img/menti_qr.png" alt="QR Mentimeter"></div>
+    <div style="flex:1"><div class="kicker">Umfrage · zum Mitmachen</div><h2>Woher kommen Sie?</h2>
+      <p class="lead" style="margin:0">QR-Code scannen – oder einfach die Hand heben.</p></div>
+    <div class="menti"><div><div class="mu">Umfrage im</div><div class="mc" style="font-size:56px">DFN-Terminplaner</div></div><img src="img/umfrage_qr.png" alt="QR-Code zur Umfrage"></div>
   </div>
   <div class="tiles">
     <div class="tile" data-k="1"><div class="ic">🏛️</div><div class="lb">Behörde &amp;<br>Verwaltung</div><div class="sb">Kommune · Land · Bund</div><div class="hands"></div><div class="key">[1]</div></div>
@@ -396,11 +396,10 @@ body.started #help{opacity:0}
 <script src="route.js"></script>
 <script>
 /* =================== Schritte & Sprechernotizen =================== */
-const MENTI_CODE = '0000 0000';   // <- Mentimeter-Code hier eintragen
 const STEPS = [
- // Zeitplan 15 min: Start 0:00 · Mentimeter 0:30 · Reise 2:30 · Forschungsfragen 8:30 · Agenda 10:30 · Paper 13:00 · Ende 14:30
+ // Zeitplan 15 min: Start 0:00 · Umfrage 0:30 · Reise 2:30 · Forschungsfragen 8:30 · Agenda 10:30 · Paper 13:00 · Ende 14:30
  {el:'title', robot:'start', note:'[0:00] Begrüßung. „Ich nehme Sie mit auf eine Reise – 47 km, ein Roboter, viele Fragen. Am Ende dieser Reise steht Ihr Programm für heute.“'},
- {el:'poll', note:'[0:30 – ca. 2 min] Mentimeter: Code/QR zeigen, Zeit zum Abstimmen lassen, dann zur Mentimeter-Ergebnisansicht wechseln (oder Handzeichen; Kachel anklicken bzw. Taste 1/2/3 hält die Menge fest). „Genau diese Mischung – Verwaltung, Unternehmen, Forschung – braucht das Thema.“'},
+ {el:'poll', note:'[0:30 – ca. 2 min] Umfrage (DFN-Terminplaner): QR-Code zeigen, Zeit zum Abstimmen lassen, dann ggf. kurz die Ergebnisse im Browser zeigen (oder Handzeichen; Kachel anklicken bzw. Taste 1/2/3 hält die Menge fest). „Genau diese Mischung – Verwaltung, Unternehmen, Forschung – braucht das Thema.“'},
  {el:'intro', robot:'start', note:'[2:30 – Reise, ca. 6 min] 7. Oktober 2026, 07:15 Uhr, RoboLab Freiberg. ROSEE fährt in Schrittgeschwindigkeit, begleitet von einem Team mit Not-Aus. Ziel: 4transferLab in der Dresdner Neustadt.'},
  {el:'f-map', robot:'start', note:'Die Reise im Überblick: blau auf eigenen Rädern, grau gestrichelt im Auto, gelb mit der Linie 7. Jeder Punkt ist ein Foto. An sechs Stellen halten wir an.'},
  {el:'c1', robot:'5ac546', note:'Begleitgrün: Gras, Äste, Sträucher. Das restriktive Sicherheitssystem stoppt. Der Roboter muss lernen, was nachgibt – und wissen, wie breit der befahrbare Bereich ist, abhängig von der eigenen Positionsunsicherheit.'},
@@ -424,7 +423,6 @@ const STEPS = [
  {el:'papers', note:'[13:00 – ca. 1½ min] Umgang mit den eingereichten Papern: Anzahl, Auswahl für Vorträge/Pitches, Veröffentlichung, nächste Schritte. (Gelb markierte Platzhalter vorher ausfüllen.)'},
  {el:'closing', robot:'goal', note:'[14:30] Hinweis auf die Website mit Karte und Fotos. Übergabe an Session 1.'},
 ];
-document.getElementById('mcode').textContent=MENTI_CODE;
 
 /* =================== Weltaufbau =================== */
 const R = window.ROUTE, NS='http://www.w3.org/2000/svg';
