@@ -142,11 +142,11 @@ b.hl{color:var(--c,var(--blue))}
 .here{font:800 64px var(--font);color:var(--blue)}
 
 /* Abschluss */
-#closing{width:2600px;height:1350px;flex-direction:row;align-items:center;padding:90px 100px;gap:80px}
+#closing{width:2600px;height:1000px;flex-direction:row;align-items:center;padding:90px 100px;gap:80px}
 #closing h2{font:900 130px/1 var(--font);margin:0 0 40px}
 #closing p{font:500 52px/1.3 var(--font);margin:0;color:#39424e}
 #closing img.qr{height:640px;image-rendering:pixelated;border-radius:20px}
-#closing .lg{display:flex;gap:70px;margin-top:70px;align-items:center}
+#closing .lg{display:flex;gap:70px;margin-top:70px;align-items:center;justify-content:center}
 #closing .lg img{height:110px}
 
 /* Verknüpfungs-Schritt */
@@ -353,12 +353,10 @@ body.started #help{opacity:0}
 
 <!-- ============ ABSCHLUSS ============ -->
 <div id="closing" class="card" style="left:12700px;top:3750px;--rot:1deg" data-rot="1">
-  <div style="flex:1">
+  <div style="flex:1;text-align:center">
     <h2>Gute Fahrt durch den Tag!</h2>
-    <p>Karte, alle 60 Fotos und Erkenntnisse der Reise:<br><b style="color:var(--blue)">sebastianzug.github.io/RoseesRoboterReise</b></p>
     <div class="lg"><img src="img/TUBAF_Logo_blau.png" alt=""><img src="img/robolab.png" alt=""><img src="img/4transfer_Logo.png" alt=""></div>
   </div>
-  <img class="qr" src="img/qr.png" alt="QR-Code zur Routen-Website">
 </div>
 
 <!-- unsichtbare Übersichtsrahmen -->
@@ -395,7 +393,7 @@ const STEPS = [
  {el:'a2', note:'Stationen 2 und 4 – Ortsschild, fehlender Fuß-/Radweg: Wo darf ein Roboter fahren – und wer entscheidet das? → Session 2 um 13:30: Rechtsfragen auf Fuß- und Radwegen, Regulierungsrahmen, Gehweg nutzbar machen.'},
  {el:'a3', note:'Station 5 – 11½ Stunden Teamarbeit: Was braucht der Betrieb im Alltag? → 15:00 Praxisimpuls, Kurzpitches, ab 15:25 Showroom mit Demonstratoren.'},
  {el:'a4', note:'Station 6 – der geteilte Gehweg: Wie teilen wir den öffentlichen Raum? → 16:30 Podium mit den Perspektiven Radverkehr, Verwaltung und Logistik im ländlichen Raum – ich moderiere.'},
- {el:'closing', robot:'goal', note:'[13:00] Ggf. Einreichende persönlich ansprechen. [14:30] Hinweis auf die Website mit Karte und Fotos. Übergabe an Session 1.'},
+ {el:'closing', robot:'goal', note:'[13:00] Ggf. Einreichende persönlich ansprechen. [14:30] Übergabe an Session 1.'},
 ];
 
 /* =================== Weltaufbau =================== */
