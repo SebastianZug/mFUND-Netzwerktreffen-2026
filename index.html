@@ -362,20 +362,8 @@ body.started #help{opacity:0}
   </div>
 </div>
 
-<!-- ============ PAPER ============ -->
-<div id="papers" class="card" style="left:11900px;top:3700px;width:2400px;height:1100px;--rot:-1deg;flex-direction:column;padding:80px 96px" data-rot="-1">
-  <div class="kicker">Ihre Beiträge</div>
-  <h2 style="font-size:100px;margin:16px 0 40px">Was passiert mit den eingereichten Papern?</h2>
-  <ul class="pl">
-    <li><b>Eingegangen:</b> <span class="todo">[Anzahl]</span> Einreichungen aus <span class="todo">[Projekten / Institutionen]</span></li>
-    <li><b>Auswahl:</b> Vorträge in Session 1 &amp; 2, weitere Beiträge als <span class="todo">[Pitch / Poster]</span> im Showroom</li>
-    <li><b>Veröffentlichung:</b> <span class="todo">[Tagungsband / Sonderheft / Website]</span></li>
-    <li><b>Nächste Schritte:</b> <span class="todo">[Überarbeitung bis … · Feedback aus der Diskussion heute]</span></li>
-  </ul>
-</div>
-
 <!-- ============ ABSCHLUSS ============ -->
-<div id="closing" class="card" style="left:14600px;top:3700px;--rot:1deg" data-rot="1">
+<div id="closing" class="card" style="left:12700px;top:3750px;--rot:1deg" data-rot="1">
   <div style="flex:1">
     <h2>Gute Fahrt durch den Tag!</h2>
     <p>Karte, alle 60 Fotos und Erkenntnisse der Reise:<br><b style="color:var(--blue)">sebastianzug.github.io/RoseesRoboterReise</b></p>
@@ -400,7 +388,7 @@ body.started #help{opacity:0}
 <script>
 /* =================== Schritte & Sprechernotizen =================== */
 const STEPS = [
- // Zeitplan 15 min: Start 0:00 · Umfrage 0:30 · Reise 2:30 · Forschungsfragen 8:30 · Agenda 10:30 · Paper 13:00 · Ende 14:30
+ // Zeitplan 15 min: Start 0:00 · Umfrage 0:30 · Reise 2:30 · Forschungsfragen 8:30 · Agenda 10:30 · Beiträge (persönlich) 13:00 · Ende 14:30
  {el:'title', robot:'start', note:'[0:00] Begrüßung. „Ich nehme Sie mit auf eine Reise – 47 km, ein Roboter, viele Fragen. Am Ende dieser Reise steht Ihr Programm für heute.“'},
  {el:'poll', note:'[0:30 – ca. 2 min] Umfrage (DFN-Terminplaner): QR-Code zeigen, Zeit zum Abstimmen lassen, dann ggf. kurz die Ergebnisse im Browser zeigen (oder Handzeichen; Kachel anklicken bzw. Taste 1/2/3 hält die Menge fest). „Genau diese Mischung – Verwaltung, Unternehmen, Forschung – braucht das Thema.“'},
  {el:'intro', robot:'start', note:'[2:30 – Reise, ca. 6 min] 7. Oktober 2026, 07:15 Uhr, RoboLab Freiberg. ROSEE fährt in Schrittgeschwindigkeit, begleitet von einem Team mit Not-Aus. Ziel: 4transferLab in der Dresdner Neustadt.'},
@@ -419,8 +407,7 @@ const STEPS = [
  {el:'a2', note:'Stationen 2 und 4 – Ortsschild, fehlender Fuß-/Radweg: Wo darf ein Roboter fahren – und wer entscheidet das? → Session 2 um 13:30: Rechtsfragen auf Fuß- und Radwegen, Regulierungsrahmen, Gehweg nutzbar machen.'},
  {el:'a3', note:'Station 5 – 11½ Stunden Teamarbeit: Was braucht der Betrieb im Alltag? → 15:00 Praxisimpuls, Kurzpitches, ab 15:25 Showroom mit Demonstratoren.'},
  {el:'a4', note:'Station 6 – der geteilte Gehweg: Wie teilen wir den öffentlichen Raum? → 16:30 Podium mit den Perspektiven Radverkehr, Verwaltung und Logistik im ländlichen Raum – ich moderiere.'},
- {el:'papers', note:'[13:00 – ca. 1½ min] Umgang mit den eingereichten Papern: Anzahl, Auswahl für Vorträge/Pitches, Veröffentlichung, nächste Schritte. (Gelb markierte Platzhalter vorher ausfüllen.)'},
- {el:'closing', robot:'goal', note:'[14:30] Hinweis auf die Website mit Karte und Fotos. Übergabe an Session 1.'},
+ {el:'closing', robot:'goal', note:'[13:00] Ggf. Einreichende persönlich ansprechen. [14:30] Hinweis auf die Website mit Karte und Fotos. Übergabe an Session 1.'},
 ];
 
 /* =================== Weltaufbau =================== */
@@ -473,7 +460,7 @@ for(const [p,n,s,dx,dy,anc] of places){
 }
 
 // Agenda-Pfad (hinter den Karten)
-const ap='M11850,560 C 11850,900 12200,1306 12800,1306 L15200,1306 C 16700,1306 16700,2856 15200,2856 L12800,2856 C 12000,2856 11750,3300 11800,3700';
+const ap='M11850,560 C 11850,900 12200,1306 12800,1306 L15200,1306 C 16700,1306 16700,2856 15200,2856 L12800,2856 C 12000,2856 11750,3200 11750,3500';
 el('path',{class:'a-path',d:ap}); el('path',{class:'a-path2',d:ap});
 el('circle',{cx:11850,cy:560,r:60,fill:'#0069b4',stroke:'#fff','stroke-width':16});
 
